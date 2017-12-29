@@ -1,2 +1,8 @@
 # akaruku-line-bot
-image akaruku suru
+image highlighter
+
+- please edit application.yml
+
+
+
+
