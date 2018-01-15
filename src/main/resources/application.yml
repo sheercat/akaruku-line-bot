@@ -3,3 +3,6 @@ line.bot:
   channel-secret: ${line.bot.channel-secret}
   handler.path: /callback
 
+server.port: ${server.port}
+
+
