@@ -8,6 +8,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -79,27 +80,35 @@ public class LineBot {
                 event.getReplyToken(),
                 event.getMessage().getId(),
                 responseBody -> {
+                    List<Message> messages = new ArrayList<Message>();
                     DownloadedContent jpg = saveContent("jpg", responseBody);
-                    DownloadedContent rvd = createTempFile("jpg");
+                    BufferedImage orig;
                     try {
-                        BufferedImage orig = ImageIO.read(new File(jpg.path.toString()));
+                        orig = ImageIO.read(new File(jpg.path.toString()));
+                    } catch (IOException e){
+                        e.printStackTrace();
+                        return;
+                    }
+                    try {
+                        DownloadedContent rvd = createTempFile("jpg");
                         BufferedImage revised = revise(orig, this.lookupTable1);
                         ImageIO.write(revised, "jpg", new File(rvd.path.toString()));
+                        messages.add(new ImageMessage(rvd.getUri(), rvd.getUri()));
+                        log.info(rvd.path.toString());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    log.info(rvd.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(), new ImageMessage(rvd.getUri(), rvd.getUri()));
-
                     try {
-                        BufferedImage orig = ImageIO.read(new File(jpg.path.toString()));
+                        DownloadedContent rvd = createTempFile("jpg");
                         BufferedImage revised = revise(orig, this.lookupTable2);
                         ImageIO.write(revised, "jpg", new File(rvd.path.toString()));
+                        messages.add(new ImageMessage(rvd.getUri(), rvd.getUri()));
+                        log.info(rvd.path.toString());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    log.info(rvd.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(), new ImageMessage(rvd.getUri(), rvd.getUri()));
+
+                    reply(((MessageEvent) event).getReplyToken(), messages);
                 });
     }
 

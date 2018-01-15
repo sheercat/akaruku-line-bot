@@ -1,8 +1,7 @@
 line.bot:
-  channel-token: ${line.bot.channel-token}
-  channel-secret: ${line.bot.channel-secret}
+  channel-token: 'your value'
+  channel-secret: 'your value'
   handler.path: /callback
 
-server.port: ${server.port}
 
 
