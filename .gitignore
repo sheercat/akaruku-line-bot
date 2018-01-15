@@ -50,3 +50,5 @@ nbdist/
 .meghanada
 
 .#*
+
+local.properties

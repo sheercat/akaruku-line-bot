@@ -43,13 +43,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @LineMessageHandler
 public class LineBot {
-    static int[] lookupTable;
-    static double gammaVal = 2.9;
+    static int[] lookupTable1;
+    static int[] lookupTable2;
+    static double gammaVal1 = 2.9;
+    static double gammaVal2 = 1.5;
 
     static {
-        lookupTable = new int[256];
+        lookupTable1 = new int[256];
         for (int i = 0; i < 256; i++) {
-            lookupTable[i] = (int) Math.round(255 * Math.pow(((double) i / 255), 1 / gammaVal));
+            lookupTable1[i] = (int) Math.round(255 * Math.pow(((double) i / 255), 1 / gammaVal1));
+        }
+        lookupTable2 = new int[256];
+        for (int i = 0; i < 256; i++) {
+            lookupTable2[i] = (int) Math.round(255 * Math.pow(((double) i / 255), 1 / gammaVal2));
         }
     }
 
@@ -69,7 +75,6 @@ public class LineBot {
 
     @EventMapping
     public void handleImageMessageEvent(MessageEvent<ImageMessageContent> event) throws IOException {
-        // You need to install ImageMagick
         handleHeavyContent(
                 event.getReplyToken(),
                 event.getMessage().getId(),
@@ -78,18 +83,27 @@ public class LineBot {
                     DownloadedContent rvd = createTempFile("jpg");
                     try {
                         BufferedImage orig = ImageIO.read(new File(jpg.path.toString()));
-                        BufferedImage revised = revise(orig);
+                        BufferedImage revised = revise(orig, this.lookupTable1);
                         ImageIO.write(revised, "jpg", new File(rvd.path.toString()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     log.info(rvd.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(),
-                          new ImageMessage(rvd.getUri(), rvd.getUri()));
+                    reply(((MessageEvent) event).getReplyToken(), new ImageMessage(rvd.getUri(), rvd.getUri()));
+
+                    try {
+                        BufferedImage orig = ImageIO.read(new File(jpg.path.toString()));
+                        BufferedImage revised = revise(orig, this.lookupTable2);
+                        ImageIO.write(revised, "jpg", new File(rvd.path.toString()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    log.info(rvd.path.toString());
+                    reply(((MessageEvent) event).getReplyToken(), new ImageMessage(rvd.getUri(), rvd.getUri()));
                 });
     }
 
-    public BufferedImage revise(BufferedImage image) {
+    public BufferedImage revise(BufferedImage image, int[] lookup) {
         BufferedImage alteredImage = new BufferedImage(image.getWidth(),
                                                        image.getHeight(),
                                                        image.getType()
@@ -106,9 +120,9 @@ public class LineBot {
                 int iR = (iC >> 16) & 0x00ff;
                 int iA = (iC >> 24) & 0x00ff;
 
-                int iRd = this.lookupTable[iR];
-                int iGd = this.lookupTable[iG];
-                int iBd = this.lookupTable[iB];
+                int iRd = lookup[iR];
+                int iGd = lookup[iG];
+                int iBd = lookup[iB];
 
                 iCd = (iA << 24) + (iRd << 16) + (iGd << 8) + iBd;
 
