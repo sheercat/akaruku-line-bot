@@ -85,7 +85,7 @@ public class LineBot {
                     BufferedImage orig;
                     try {
                         orig = ImageIO.read(new File(jpg.path.toString()));
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         e.printStackTrace();
                         return;
                     }
