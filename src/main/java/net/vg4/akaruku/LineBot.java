@@ -82,6 +82,7 @@ public class LineBot {
                 responseBody -> {
                     List<Message> messages = new ArrayList<Message>();
                     DownloadedContent jpg = saveContent("jpg", responseBody);
+
                     BufferedImage orig;
                     try {
                         orig = ImageIO.read(new File(jpg.path.toString()));
@@ -112,27 +113,27 @@ public class LineBot {
                 });
     }
 
-    public BufferedImage revise(BufferedImage image, int[] lookup) {
+    private BufferedImage revise(BufferedImage image, int[] lookup) {
         BufferedImage alteredImage = new BufferedImage(image.getWidth(),
                                                        image.getHeight(),
                                                        image.getType()
         );
 //                                                       BufferedImage.TYPE_INT_ARGB);
-        int iCd = 0;
-
-        for (int h = 0; h < image.getHeight(); h++) {
-            for (int w = 0; w < image.getWidth(); w++) {
-                int iC = image.getRGB(w, h);
-
-                int iB = iC & 0x00ff;
-                int iG = (iC >> 8) & 0x00ff;
-                int iR = (iC >> 16) & 0x00ff;
-                int iA = (iC >> 24) & 0x00ff;
-
-                int iRd = lookup[iR];
-                int iGd = lookup[iG];
-                int iBd = lookup[iB];
-
+        int iCd;
+        int iC;
+        int iA;
+        int iRd;
+        int iGd;
+        int iBd;
+        int ih = image.getHeight();
+        int iw = image.getWidth();
+        for (int h = 0; h < ih; h++) {
+            for (int w = 0; w < iw; w++) {
+                iC = image.getRGB(w, h);
+                iRd = lookup[(iC >> 16) & 0x00ff];
+                iGd = lookup[(iC >> 8) & 0x00ff];
+                iBd = lookup[iC & 0x00ff];
+                iA = (iC >> 24) & 0x00ff;
                 iCd = (iA << 24) + (iRd << 16) + (iGd << 8) + iBd;
 
                 alteredImage.setRGB(w, h, iCd);

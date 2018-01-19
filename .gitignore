@@ -52,3 +52,6 @@ nbdist/
 .#*
 
 local.properties
+
+out/
+
